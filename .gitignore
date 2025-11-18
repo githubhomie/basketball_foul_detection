@@ -1,3 +1,7 @@
 __pycache__
 .vscode
 work_dir
+READY_FOR_TRAINING.md
+*.backup
+*.clean
+models/soccernet_pretrained/checkpoint_140.pt

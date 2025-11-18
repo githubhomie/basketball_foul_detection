@@ -1,0 +1,5 @@
+shooting_foul
+personal_foul
+loose_ball
+offensive_foul
+charging
