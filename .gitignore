@@ -5,3 +5,7 @@ READY_FOR_TRAINING.md
 *.backup
 *.clean
 models/soccernet_pretrained/checkpoint_140.pt
+.env
+data_pipeline/.env
+data_pipeline/data/
+data_pipeline/temp_frames/

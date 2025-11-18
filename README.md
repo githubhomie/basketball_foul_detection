@@ -13,6 +13,17 @@ Detects and classifies fouls in NBA game footage:
 
 **Dataset:** 1,808 NBA clips (2023-24 season), 808 annotated foul events
 
+## Full Pipeline
+
+This repository contains the complete workflow from data collection to model training:
+
+1. **Data Collection** ([`data_pipeline/`](data_pipeline/)) - Collect foul clips from NBA API
+2. **Annotation** ([`data_pipeline/annotation_tool/`](data_pipeline/annotation_tool/)) - Frame-level foul labeling
+3. **Dataset Preparation** ([`data_pipeline/prepare_for_training.py`](data_pipeline/prepare_for_training.py)) - Convert to E2E-Spot format
+4. **Training** ([`train_basketball.sh`](train_basketball.sh)) - Train foul detection model
+
+See [`data_pipeline/README.md`](data_pipeline/README.md) for detailed documentation on data collection and annotation.
+
 ## Quick Start
 
 ### Training
