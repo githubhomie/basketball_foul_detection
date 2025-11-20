@@ -525,7 +525,7 @@ def main(args):
     train_loader = DataLoader(
         train_data, shuffle=False, batch_size=loader_batch_size,
         pin_memory=True, num_workers=get_num_train_workers(args),
-        prefetch_factor=1, worker_init_fn=worker_init_fn)
+        prefetch_factor=4, worker_init_fn=worker_init_fn)
     val_loader = DataLoader(
         val_data, shuffle=False, batch_size=loader_batch_size,
         pin_memory=True, num_workers=BASE_NUM_WORKERS,
