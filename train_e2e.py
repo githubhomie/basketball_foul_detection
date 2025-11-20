@@ -96,7 +96,8 @@ def get_args():
 
     parser.add_argument('--dilate_len', type=int, default=0,
                         help='Label dilation when training')
-    parser.add_argument('--mixup', type=bool, default=True)
+    parser.add_argument('--mixup', type=lambda x: str(x).lower() in ('true', '1', 'yes'),
+                        default=True, help='Enable mixup augmentation')
 
     parser.add_argument('-j', '--num_workers', type=int,
                         help='Base number of dataloader workers')
