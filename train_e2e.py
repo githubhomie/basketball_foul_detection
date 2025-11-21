@@ -27,7 +27,7 @@ from util.io import load_json, store_json, store_gz_json, clear_files
 from util.dataset import DATASETS, load_classes
 from util.score import compute_mAPs
 
-EPOCH_NUM_FRAMES = 500000
+EPOCH_NUM_FRAMES = 100000
 
 BASE_NUM_WORKERS = 4
 
@@ -541,7 +541,10 @@ def main(args):
         len(classes) + 1, args.feature_arch, args.temporal_arch,
         clip_len=args.clip_len, modality=args.modality,
         multi_gpu=args.gpu_parallel)
-    optimizer, scaler = model.get_optimizer({'lr': args.learning_rate})
+    optimizer, scaler = model.get_optimizer({
+        'lr': args.learning_rate,
+        'weight_decay': 0.01
+    })
 
     # Warmup schedule
     num_steps_per_epoch = len(train_loader) // args.acc_grad_iter
