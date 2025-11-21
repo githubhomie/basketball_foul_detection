@@ -486,7 +486,12 @@ def store_config(file_path, args, num_epochs, classes):
         'mixup': args.mixup,
         'fg_upsample': args.fg_upsample
     }
-    store_json(file_path, config, pretty=True)
+    try:
+        store_json(file_path, config, pretty=True)
+    except OSError:
+        print('Warning: could not write config to {}. Printing instead.'.format(
+            file_path))
+        print(config)
 
 
 def get_num_train_workers(args):
