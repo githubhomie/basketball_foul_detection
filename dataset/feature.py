@@ -148,7 +148,7 @@ class FeatureDataset(Dataset):
             feat = feat[:, 0, :]    # 0th channel is unaugmented
         feat = feat.copy()          # Make copy since array is memmapped
 
-        labels = np.zeros(feat.shape[0], np.int)
+        labels = np.zeros(feat.shape[0], int)
         meta = self._labels[self._video_idxs[video]]
         num_frames = meta['num_frames']
         for event in meta['events']:
