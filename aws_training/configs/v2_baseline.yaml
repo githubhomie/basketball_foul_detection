@@ -1,0 +1,33 @@
+# V2 Baseline Configuration
+# Based on successful training achieving 96.5% F1 detection
+#
+# This is the recommended starting configuration for training.
+# Copy this file and modify for experiments.
+
+# Dataset
+dataset: basketball
+frame_dir: /data/frames
+
+# Model architecture
+model_arch: rny008_gsm    # RegNet-Y 008 + Gated Shift Module (12.6M params)
+temporal_arch: gru        # Bidirectional GRU
+
+# Training hyperparameters
+batch_size: 8             # Works well on A10G (24GB). Use 4 if OOM.
+clip_len: 30              # 30 frames per clip (7.5 seconds at 4fps)
+num_epochs: 50            # Full training run
+learning_rate: 0.0005     # With warmup, this works well for rny008
+warm_up_epochs: 3         # Linear warmup from 0 to learning_rate
+crop_dim: 224             # Input image size
+
+# Label handling (important for good results!)
+dilate_len: 3             # Dilate ground truth by ±3 frames (±0.75 sec tolerance)
+fg_upsample: 1.0          # 100% of batches contain foul clips
+
+# Optional
+mixup: false              # Disabled - doesn't help with point annotations
+start_val_epoch: 3        # Start validation/mAP computation at epoch 3
+
+# Experiment metadata (for W&B)
+experiment_tag: v2_baseline
+notes: "Baseline V2 config with rny008_gsm backbone"
