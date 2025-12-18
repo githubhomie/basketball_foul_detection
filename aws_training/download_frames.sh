@@ -15,7 +15,7 @@ echo "========================================"
 echo "Downloading Training Frames from S3"
 echo "========================================"
 echo ""
-echo "Source: $S3_BUCKET/frames/"
+echo "Source: $S3_BUCKET/frames_training/"
 echo "Destination: $LOCAL_DIR"
 echo ""
 
@@ -54,7 +54,8 @@ echo ""
 
 # Use aws s3 sync for resumable transfers
 # --only-show-errors reduces output noise
-aws s3 sync $S3_BUCKET/frames/ $LOCAL_DIR/ \
+# NOTE: Download from frames_training/ which has reorganized structure: {clip_id}/{frame_num:06d}.jpg
+aws s3 sync $S3_BUCKET/frames_training/ $LOCAL_DIR/ \
     --only-show-errors
 
 # Verify download
