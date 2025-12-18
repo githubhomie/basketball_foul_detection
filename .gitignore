@@ -9,3 +9,6 @@ models/soccernet_pretrained/checkpoint_140.pt
 data_pipeline/.env
 data_pipeline/data/
 data_pipeline/temp_frames/
+
+# AWS Training context (contains IPs, instance names)
+AWS_TRAINING_CONTEXT.md

@@ -1,111 +1,55 @@
 # Basketball Foul Detection
 
-Automated detection and classification of NBA fouls using temporal action spotting.
+We built a system to automatically detect and classify fouls in NBA broadcast footage. Given a video clip, the model identifies if/when a foul occurs and what type it is.
 
-Built on the [E2E-Spot architecture](https://jhong93.github.io/projects/spot.html) (ECCV 2022) - adapted for basketball foul detection from broadcast video.
+## What We Did
 
-## What This Does
+**The Problem:** Foul detection in basketball is subjective and fast - refs make split-second calls that affect game outcomes. We wanted to see if a neural network could learn to spot fouls from broadcast video alone.
 
-Detects and classifies fouls in NBA game footage:
-- **5 foul types:** shooting, personal, loose ball, charging, offensive
-- **Frame-level precision:** Identifies the exact moment a foul occurs
-- **End-to-end learning:** Direct from video frames to foul detection
+**Our Approach:**
+1. **Built a dataset from scratch** - We pulled play-by-play data from the NBA API to find foul events, downloaded 7.5-second clips around each foul, and manually annotated the exact frame where contact occurred.
+2. **Created an annotation tool** - A Streamlit web app that streams frames from S3 and lets annotators mark the precise foul moment. We annotated 1,400+ foul clips this way.
+3. **Adapted E2E-Spot for basketball** - E2E-Spot was designed for soccer action spotting. We modified it for our foul detection task, experimenting with different backbones, temporal models, and loss function parameters.
+4. **Trained on AWS/Colab** - Full training pipeline with Weights & Biases logging, checkpoint management, and evaluation scripts.
 
-**Dataset:** 1,808 NBA clips (2023-24 season), 808 annotated foul events
+**Dataset Stats:**
+- 2,360 total clips (1,359 fouls + 1,000 non-fouls)
+- 5 foul types: shooting, personal, loose ball, charging, offensive
+- ~82,000 frames from 2023-24 NBA season
 
-## Full Pipeline
+## Running the Code
 
-This repository contains the complete workflow from data collection to model training:
+**Training (Colab):**
+Open `nba_foul_e2e_spot_colab.ipynb` in Google Colab and run all cells. The notebook handles data download, training, and evaluation.
 
-1. **Data Collection** ([`data_pipeline/`](data_pipeline/)) - Collect foul clips from NBA API
-2. **Annotation** ([`data_pipeline/annotation_tool/`](data_pipeline/annotation_tool/)) - Frame-level foul labeling
-3. **Dataset Preparation** ([`data_pipeline/prepare_for_training.py`](data_pipeline/prepare_for_training.py)) - Convert to E2E-Spot format
-4. **Training** ([`train_basketball.sh`](train_basketball.sh)) - Train foul detection model
-
-See [`data_pipeline/README.md`](data_pipeline/README.md) for detailed documentation on data collection and annotation.
-
-## Quick Start
-
-### Training
+**Data Collection:**
 ```bash
-./train_basketball.sh
+python data_pipeline/collect_data.py --season 2023-24 --games 100
 ```
 
-Or manually:
+**Annotation Tool:**
 ```bash
-python3 train_e2e.py basketball /path/to/frames \
-    -s ./checkpoints \
-    -m rny002_gsm \
-    -t gru \
-    --clip_len 30 \
-    --batch_size 8 \
-    --num_epochs 50
+cd data_pipeline/annotation_tool && streamlit run app.py
 ```
 
-### Evaluation
-```bash
-python3 eval.py -s test checkpoints/basketball_YYYYMMDD/
-```
+## Team Contributions
 
-### Inference
-```bash
-python3 test_e2e.py checkpoints/basketball_best/ /path/to/frames -s test --save
-```
+**Tianli:** Dataset design and collection, foul video ingestion, annotation coordination, training experiments.
 
-## Data Format
+**Oliver:** Model development and training, E2E-Spot adaptation, experiment tracking, hyperparameter tuning.
 
-### Dataset Structure
-```
-data/basketball/
-├── train.json      # 1,265 clips
-├── val.json        # 269 clips
-├── test.json       # 274 clips
-└── class.txt       # 5 foul types
-```
+**Kai:** Evaluation design, detection/classification metrics, threshold tuning, dataset validation.
 
-### JSON Format
-```json
-[
-  {
-    "video": "0022301194_219",
-    "num_frames": 30,
-    "num_events": 1,
-    "events": [{"frame": 10, "label": "charging"}],
-    "fps": 4,
-    "width": 1920,
-    "height": 1080
-  }
-]
-```
+**Alexandra:** Annotation tooling (Streamlit interface), dataset curation, error analysis, result interpretation.
 
-### Frame Directory
-```
-frames/
-├── 0022301194_219/
-│   ├── 000000.jpg
-│   ├── 000001.jpg
-│   └── ... (30 frames)
-└── ...
-```
+## Architecture
 
-## Model Architecture
+We use E2E-Spot (Hong et al., ECCV 2022) - a temporal action spotting model with:
+- RegNet-Y backbone with Gated Shift Module for efficient video features
+- Bidirectional GRU for temporal modeling
+- Per-frame classification with focal loss
 
-- **Backbone:** RegNet-Y 200MF with Gated Shift Module (GSM)
-- **Temporal:** Bidirectional GRU
-- **Input:** 30-frame clips at 224×224
-- **Output:** Per-frame foul predictions (6 classes including background)
-
-## Requirements
-
-```bash
-pip install -r requirements.txt
-```
-
-Python 3.8+, PyTorch 1.11+, CUDA 11.x
-
----
-
-**Original E2E-Spot Paper:**
-*Spotting Temporally Precise, Fine-Grained Events in Video* (ECCV 2022)
-James Hong, Haotian Zhang, Michael Gharbi, Matthew Fisher, Kayvon Fatahalian
-[Project Page](https://jhong93.github.io/projects/spot.html)
+Key hyperparameters we tuned:
+- `dilate_len=3` (±0.75 sec tolerance for annotation variance)
+- `fg_upsample=1.0` (oversample foul frames in training)
+- `rny008_gsm` backbone (4x larger than baseline)
