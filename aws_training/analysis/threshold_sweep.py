@@ -19,9 +19,11 @@ import sys
 import json
 import gzip
 import argparse
+import csv
 from pathlib import Path
 from glob import glob
 from collections import defaultdict
+from datetime import datetime
 
 import numpy as np
 
@@ -123,6 +125,7 @@ def main():
     parser.add_argument("--split", default="test", choices=["val", "test"])
     parser.add_argument("--nms-window", type=int, default=3, help="NMS window size")
     parser.add_argument("--data-dir", default=None, help="Override data directory")
+    parser.add_argument("--save-results", action="store_true", help="Save results to JSON/CSV in checkpoint/results/")
     args = parser.parse_args()
 
     # Find data directory
@@ -227,6 +230,71 @@ def main():
     print()
     print("For BALANCED (default):")
     print(f"  Use threshold = {best_f1['threshold']:.2f}")
+
+    # Save results if requested
+    if args.save_results:
+        results_dir = Path(args.checkpoint) / "results"
+        results_dir.mkdir(exist_ok=True)
+
+        # Save CSV (easy for plotting)
+        csv_file = results_dir / f"threshold_sweep_{args.split}.csv"
+        with open(csv_file, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=['threshold', 'recall', 'precision', 'f1', 'fpr', 'tp', 'fp', 'fn', 'tn'])
+            writer.writeheader()
+            for r in results:
+                writer.writerow(r)
+
+        # Save JSON (complete results + recommendations)
+        json_results = {
+            "timestamp": datetime.now().isoformat(),
+            "checkpoint": str(args.checkpoint),
+            "split": args.split,
+            "nms_window": args.nms_window,
+            "foul_clips": foul_clips,
+            "nonfoul_clips": nonfoul_clips,
+            "sweep_results": results,
+            "recommendations": {
+                "best_f1": {
+                    "threshold": best_f1['threshold'],
+                    "recall": best_f1['recall'],
+                    "precision": best_f1['precision'],
+                    "f1": best_f1['f1'],
+                    "fpr": best_f1['fpr'],
+                },
+                "best_balanced": {
+                    "threshold": best_balanced['threshold'],
+                    "recall": best_balanced['recall'],
+                    "precision": best_balanced['precision'],
+                    "f1": best_balanced['f1'],
+                    "fpr": best_balanced['fpr'],
+                } if best_balanced['f1'] > 0 else None,
+                "best_recall_at_70_precision": {
+                    "threshold": best_recall_at_precision['threshold'],
+                    "recall": best_recall_at_precision['recall'],
+                    "precision": best_recall_at_precision['precision'],
+                } if best_recall_at_precision['precision'] >= 0.70 else None,
+            }
+        }
+
+        json_file = results_dir / f"threshold_sweep_{args.split}.json"
+        with open(json_file, 'w') as f:
+            json.dump(json_results, f, indent=2)
+
+        # Save best threshold for easy loading
+        best_file = results_dir / "best_threshold.json"
+        with open(best_file, 'w') as f:
+            json.dump({
+                "threshold": best_f1['threshold'],
+                "f1": best_f1['f1'],
+                "recall": best_f1['recall'],
+                "precision": best_f1['precision'],
+            }, f, indent=2)
+
+        print()
+        print(f"Results saved to:")
+        print(f"  {csv_file}")
+        print(f"  {json_file}")
+        print(f"  {best_file}")
 
 
 if __name__ == "__main__":

@@ -24,6 +24,7 @@ import argparse
 from pathlib import Path
 from glob import glob
 from collections import defaultdict, Counter
+from datetime import datetime
 
 import numpy as np
 
@@ -209,6 +210,7 @@ def main():
     parser.add_argument("--tolerance", type=int, default=2, help="Frame tolerance for matching")
     parser.add_argument("--nms-window", type=int, default=3, help="NMS window size")
     parser.add_argument("--data-dir", default=None, help="Override data directory")
+    parser.add_argument("--save-results", action="store_true", help="Save results to JSON in checkpoint/results/")
     args = parser.parse_args()
 
     # Find data directory
@@ -375,6 +377,52 @@ def main():
         print("Classification: MODERATE")
     else:
         print("Classification: NEEDS IMPROVEMENT")
+
+    # Save results to JSON if requested
+    if args.save_results:
+        results_dir = Path(args.checkpoint) / "results"
+        results_dir.mkdir(exist_ok=True)
+
+        # Build results dict
+        results = {
+            "timestamp": datetime.now().isoformat(),
+            "checkpoint": str(args.checkpoint),
+            "epoch": epoch,
+            "split": args.split,
+            "threshold": args.threshold,
+            "tolerance": args.tolerance,
+            "nms_window": args.nms_window,
+            "detection": {
+                "recall": det_results['recall'],
+                "precision": det_results['precision'],
+                "f1": det_results['f1'],
+                "fpr": det_results['fpr'],
+                "tp": det_results['tp'],
+                "fp": det_results['fp'],
+                "fn": det_results['fn'],
+                "tn": det_results['tn'],
+            },
+            "classification": {
+                "accuracy": class_results['accuracy'],
+                "correct": class_results['correct'],
+                "total": class_results['total'],
+                "confusion": class_results['confusion'],
+            },
+            "temporal": {
+                "mean_frame_error": float(np.mean(class_results['frame_errors'])) if class_results['frame_errors'] else None,
+                "median_frame_error": float(np.median(class_results['frame_errors'])) if class_results['frame_errors'] else None,
+                "within_1_frame": float(np.mean(np.array(class_results['frame_errors']) <= 1)) if class_results['frame_errors'] else None,
+                "within_2_frames": float(np.mean(np.array(class_results['frame_errors']) <= 2)) if class_results['frame_errors'] else None,
+            },
+        }
+
+        # Save JSON
+        output_file = results_dir / f"eval_{args.split}_t{args.threshold:.2f}.json"
+        with open(output_file, 'w') as f:
+            json.dump(results, f, indent=2)
+
+        print()
+        print(f"Results saved to: {output_file}")
 
 
 if __name__ == "__main__":
