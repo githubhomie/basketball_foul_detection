@@ -53,3 +53,26 @@ Key hyperparameters we tuned:
 - `dilate_len=3` (±0.75 sec tolerance for annotation variance)
 - `fg_upsample=1.0` (oversample foul frames in training)
 - `rny008_gsm` backbone (4x larger than baseline)
+
+## Repository Structure
+
+```
+basketball_foul_detection/
+├── nba_foul_e2e_spot_colab.ipynb   # Main training notebook (run in Colab)
+│
+├── data_pipeline/                   # [OUR WORK] NBA data collection
+│   ├── annotation_tool/             # Streamlit app for labeling fouls
+│   ├── collect_data.py              # Pull foul clips from NBA API
+│   └── prepare_for_training.py      # Convert to E2E-Spot format
+│
+├── aws_training/                    # [OUR WORK] AWS/EC2 training scripts
+├── data/basketball/                 # [OUR WORK] Dataset configs (train/val/test splits)
+│
+├── model/                           # [E2E-SPOT] Model architecture
+├── dataset/                         # [E2E-SPOT] Dataset loading
+├── util/                            # [E2E-SPOT] Utilities
+├── evaluation/                      # [E2E-SPOT] Evaluation metrics
+└── notebooks/archive/               # Older experiment notebooks
+```
+
+Base model code from [E2E-Spot](https://github.com/jhong93/spot) (Hong et al., ECCV 2022).
