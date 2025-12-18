@@ -34,13 +34,29 @@ cd data_pipeline/annotation_tool && streamlit run app.py
 
 ## Team Contributions
 
-**Tianli:** Dataset design and collection, foul video ingestion, annotation coordination, training experiments.
+**Tianli:** Dataset design and collection, foul video ingestion, annotation coordination
+- `data_pipeline/collect_data.py` - NBA API integration and clip extraction
+- `data_pipeline/prepare_for_training.py` - Dataset format conversion (w/ Oliver)
+- `data/basketball/` - Train/val/test split definitions (w/ Kai)
 
-**Oliver:** Model development and training, E2E-Spot adaptation, experiment tracking, hyperparameter tuning.
+**Oliver:** Model development, E2E-Spot adaptation, training pipeline
+- `model/` - Architecture modifications for basketball (w/ Kai)
+- `aws_training/` - AWS/EC2 training infrastructure
+- `nba_foul_e2e_spot_colab.ipynb` - Main training notebook
+- `data_pipeline/prepare_for_training.py` - Training data integration (w/ Tianli)
 
-**Kai:** Evaluation design, detection/classification metrics, threshold tuning, dataset validation.
+**Kai:** Evaluation design, metrics implementation, threshold analysis
+- `aws_training/analysis/evaluate.py` - Detection and classification metrics (w/ Oliver)
+- `aws_training/analysis/threshold_sweep.py` - Confidence threshold optimization
+- `util/score.py`, `util/eval.py` - Core metric computation
+- `data/basketball/` - Evaluation split validation (w/ Tianli)
 
-**Alexandra:** Annotation tooling (Streamlit interface), dataset curation, error analysis, result interpretation.
+**Alexandra:** Annotation tooling, dataset curation, error analysis
+- `data_pipeline/annotation_tool/` - Streamlit labeling interface (w/ Tianli)
+- `aws_training/analysis/visualize_failures.py` - Failure case visualization (w/ Kai)
+
+### Shared Work
+All team members contributed to: dataset annotation (1,400+ foul clips labeled), architecture design discussions, final presentation, and paper writing.
 
 ## Architecture
 
