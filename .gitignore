@@ -12,3 +12,7 @@ data_pipeline/temp_frames/
 
 # AWS Training context (contains IPs, instance names)
 AWS_TRAINING_CONTEXT.md
+
+# Checkpoints (large model files - stored in S3)
+checkpoints/
+*.pt
