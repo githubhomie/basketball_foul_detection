@@ -82,16 +82,12 @@ def sync_to_s3(local_path: str, s3_bucket: str, s3_key: str):
 def build_train_command(config: dict, save_dir: str, resume: bool = False) -> list:
     """Build command-line arguments for train_e2e.py."""
 
-    # Find train_e2e.py
-    script_dir = Path(__file__).parent.parent
-    train_script = script_dir / "basketball_foul_detection" / "train_e2e.py"
+    # Find train_e2e.py (in repo root, same level as aws_training/)
+    repo_root = Path(__file__).parent.parent
+    train_script = repo_root / "train_e2e.py"
 
     if not train_script.exists():
-        # Try alternate location
-        train_script = script_dir / "train_e2e.py"
-
-    if not train_script.exists():
-        raise FileNotFoundError(f"Could not find train_e2e.py. Searched in {script_dir}")
+        raise FileNotFoundError(f"Could not find train_e2e.py at {train_script}")
 
     cmd = [
         sys.executable,
@@ -378,8 +374,8 @@ Examples:
 
     print()
     print("Next steps:")
-    print("  1. Run analysis:")
-    print(f"     python aws_training/analysis/evaluate.py --checkpoint {save_dir}")
+    print("  1. Run evaluation:")
+    print(f"     python aws_training/run_evaluation.py --checkpoint {save_dir}")
     print("  2. View results in W&B:")
     print("     https://wandb.ai")
     print("  3. Don't forget to stop your EC2 instance!")

@@ -44,31 +44,37 @@ sudo mkdir -p /data/checkpoints
 sudo chown -R ubuntu:ubuntu /data
 echo "  Created /data/frames and /data/checkpoints"
 
-# 3. Set up conda environment
+# 3. Set up Python environment (venv preferred, conda fallback)
 echo ""
-echo "[3/6] Setting up conda environment..."
+echo "[3/6] Setting up Python environment..."
 
-# Source conda (Deep Learning AMI has conda pre-installed)
-if [ -f ~/anaconda3/etc/profile.d/conda.sh ]; then
-    source ~/anaconda3/etc/profile.d/conda.sh
-elif [ -f ~/miniconda3/etc/profile.d/conda.sh ]; then
-    source ~/miniconda3/etc/profile.d/conda.sh
-elif [ -f /opt/conda/etc/profile.d/conda.sh ]; then
-    source /opt/conda/etc/profile.d/conda.sh
+# Check for existing venv first (EC2 instance may already have one)
+if [ -d ~/venv ]; then
+    echo "  Found existing venv at ~/venv"
+    source ~/venv/bin/activate
+elif [ -f ~/anaconda3/etc/profile.d/conda.sh ] || [ -f ~/miniconda3/etc/profile.d/conda.sh ]; then
+    # Fall back to conda if available
+    if [ -f ~/anaconda3/etc/profile.d/conda.sh ]; then
+        source ~/anaconda3/etc/profile.d/conda.sh
+    else
+        source ~/miniconda3/etc/profile.d/conda.sh
+    fi
+    if conda env list | grep -q "foul_detection"; then
+        echo "  Environment 'foul_detection' already exists"
+        conda activate foul_detection
+    else
+        echo "  Creating conda environment 'foul_detection'..."
+        conda create -n foul_detection python=3.10 -y
+        conda activate foul_detection
+    fi
 else
-    echo "  Warning: Could not find conda. Using system Python."
+    # Create new venv
+    echo "  Creating venv at ~/venv..."
+    python3 -m venv ~/venv
+    source ~/venv/bin/activate
 fi
 
-# Check if environment already exists
-if conda env list | grep -q "foul_detection"; then
-    echo "  Environment 'foul_detection' already exists"
-    conda activate foul_detection
-else
-    echo "  Creating conda environment 'foul_detection'..."
-    conda create -n foul_detection python=3.10 -y
-    conda activate foul_detection
-fi
-
+echo "  Using Python: $(which python)"
 echo "  Done!"
 
 # 4. Install PyTorch and dependencies
@@ -159,7 +165,7 @@ echo "   (takes ~10-15 minutes for 22GB)"
 echo ""
 echo "3. Start training:"
 echo "   tmux new -s train"
-echo "   conda activate foul_detection"
+echo "   source ~/venv/bin/activate  # or: conda activate foul_detection"
 echo "   python aws_training/train_wrapper.py --config aws_training/configs/v2_baseline.yaml"
 echo ""
 echo "4. To detach from tmux (training keeps running):"

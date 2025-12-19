@@ -84,3 +84,16 @@ echo ""
 echo "Disk usage:"
 du -sh $LOCAL_DIR
 df -h /data
+
+# Download split files to data/basketball/
+echo ""
+echo "Downloading split files..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+DATA_DIR="$REPO_ROOT/data/basketball"
+
+mkdir -p "$DATA_DIR"
+aws s3 cp $S3_BUCKET/splits/ "$DATA_DIR/" --recursive --only-show-errors
+
+echo "Split files downloaded to: $DATA_DIR"
+ls -la "$DATA_DIR"
