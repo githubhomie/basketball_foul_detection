@@ -25,7 +25,7 @@ fi
 echo ""
 echo "[1/6] Installing system packages..."
 sudo apt-get update -qq
-sudo apt-get install -y -qq tmux htop tree
+sudo apt-get install -y -qq tmux htop tree ffmpeg
 
 # Install nvtop for GPU monitoring (if available)
 if command -v nvtop &> /dev/null; then
