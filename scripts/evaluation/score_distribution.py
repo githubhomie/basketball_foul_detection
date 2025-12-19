@@ -10,8 +10,8 @@ Shows:
 - Percentile breakdown
 
 Usage:
-    python aws_training/analysis/score_distribution.py --checkpoint /data/checkpoints/experiment_xxx
-    python aws_training/analysis/score_distribution.py --checkpoint /data/checkpoints/experiment_xxx --output scores.png
+    python scripts/evaluation/score_distribution.py --checkpoint /data/checkpoints/experiment_xxx
+    python scripts/evaluation/score_distribution.py --checkpoint /data/checkpoints/experiment_xxx --output scores.png
 """
 
 import os

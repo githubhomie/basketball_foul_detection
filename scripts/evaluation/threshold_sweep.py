@@ -10,8 +10,8 @@ Tests multiple confidence thresholds and reports:
 - Best recall at 70%+ precision
 
 Usage:
-    python aws_training/analysis/threshold_sweep.py --checkpoint /data/checkpoints/experiment_xxx
-    python aws_training/analysis/threshold_sweep.py --checkpoint /data/checkpoints/experiment_xxx --split val
+    python scripts/evaluation/threshold_sweep.py --checkpoint /data/checkpoints/experiment_xxx
+    python scripts/evaluation/threshold_sweep.py --checkpoint /data/checkpoints/experiment_xxx --split val
 """
 
 import os
@@ -29,7 +29,7 @@ import numpy as np
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "basketball_foul_detection"))
+sys.path.insert(0, str(PROJECT_ROOT))
 
 
 def load_json(path):
@@ -45,14 +45,17 @@ def load_predictions(checkpoint_dir: str, split: str = "test"):
         f"{checkpoint_dir}/pred-{split}.*.json.gz",
     ]
 
-    pred_files = []
+    pred_path = None
     for pattern in patterns:
-        pred_files.extend(glob(pattern))
+        matches = glob(pattern)
+        # Exclude .score. files (different format - raw scores, not events)
+        matches = [f for f in matches if '.score.' not in f]
+        if matches:
+            pred_path = sorted(matches)[-1]  # Latest epoch
+            break
 
-    if not pred_files:
+    if pred_path is None:
         raise FileNotFoundError(f"No prediction files found for '{split}' in {checkpoint_dir}")
-
-    pred_path = sorted(pred_files)[-1]
 
     if pred_path.endswith('.gz'):
         with gzip.open(pred_path, 'rt') as f:
@@ -132,9 +135,7 @@ def main():
     if args.data_dir:
         data_dir = Path(args.data_dir)
     else:
-        data_dir = PROJECT_ROOT / "basketball_foul_detection" / "data" / "basketball"
-        if not data_dir.exists():
-            data_dir = PROJECT_ROOT / "data" / "basketball"
+        data_dir = PROJECT_ROOT / "data" / "basketball"
 
     # Load ground truth
     gt_path = data_dir / f"{args.split}.json"

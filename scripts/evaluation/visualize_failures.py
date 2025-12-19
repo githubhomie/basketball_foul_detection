@@ -9,11 +9,11 @@ Generates grid images showing the frames from:
 - False alarms (false positives on non-foul clips)
 
 Usage:
-    python aws_training/analysis/visualize_failures.py \
+    python scripts/evaluation/visualize_failures.py \
         --checkpoint /data/checkpoints/experiment_xxx \
         --output /data/checkpoints/experiment_xxx/failure_analysis/
 
-    python aws_training/analysis/visualize_failures.py \
+    python scripts/evaluation/visualize_failures.py \
         --checkpoint /data/checkpoints/experiment_xxx \
         --frame-dir /data/frames \
         --max-cases 20

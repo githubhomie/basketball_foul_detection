@@ -79,7 +79,7 @@ Examples:
     # 1. Run threshold sweep first (to find best threshold)
     threshold_cmd = [
         sys.executable,
-        "aws_training/analysis/threshold_sweep.py",
+        "scripts/evaluation/threshold_sweep.py",
         "--checkpoint", str(checkpoint_dir),
         "--split", args.split,
         "--save-results"
@@ -101,7 +101,7 @@ Examples:
     # 3. Run detailed evaluation at best threshold
     eval_cmd = [
         sys.executable,
-        "aws_training/analysis/evaluate.py",
+        "scripts/evaluation/evaluate.py",
         "--checkpoint", str(checkpoint_dir),
         "--split", args.split,
         "--threshold", str(threshold),

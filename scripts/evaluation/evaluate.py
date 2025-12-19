@@ -11,9 +11,9 @@ This script evaluates:
 4. Per-class breakdown
 
 Usage:
-    python aws_training/analysis/evaluate.py --checkpoint /data/checkpoints/experiment_xxx
-    python aws_training/analysis/evaluate.py --checkpoint /data/checkpoints/experiment_xxx --split val
-    python aws_training/analysis/evaluate.py --checkpoint /data/checkpoints/experiment_xxx --threshold 0.15
+    python scripts/evaluation/evaluate.py --checkpoint /data/checkpoints/experiment_xxx
+    python scripts/evaluation/evaluate.py --checkpoint /data/checkpoints/experiment_xxx --split val
+    python scripts/evaluation/evaluate.py --checkpoint /data/checkpoints/experiment_xxx --threshold 0.15
 """
 
 import os
@@ -30,7 +30,7 @@ import numpy as np
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "basketball_foul_detection"))
+sys.path.insert(0, str(PROJECT_ROOT))
 
 
 def load_json(path):
@@ -41,26 +41,27 @@ def load_json(path):
 
 def load_predictions(checkpoint_dir: str, split: str = "test"):
     """Load prediction files from checkpoint directory."""
-    # Find prediction files
+    # Find prediction files - try patterns in priority order
     patterns = [
         f"{checkpoint_dir}/pred-{split}.*.recall.json.gz",
         f"{checkpoint_dir}/pred-{split}.*.json.gz",
         f"{checkpoint_dir}/pred-{split}.*.json",
     ]
 
-    pred_files = []
+    pred_path = None
     for pattern in patterns:
-        pred_files.extend(glob(pattern))
+        matches = glob(pattern)
+        # Exclude .score. files (different format - raw scores, not events)
+        matches = [f for f in matches if '.score.' not in f]
+        if matches:
+            pred_path = sorted(matches)[-1]  # Latest epoch
+            break
 
-    if not pred_files:
+    if pred_path is None:
         raise FileNotFoundError(
             f"No prediction files found for split '{split}' in {checkpoint_dir}\n"
             f"Looked for patterns like: pred-{split}.*.json.gz"
         )
-
-    # Sort and get latest
-    pred_files = sorted(pred_files)
-    pred_path = pred_files[-1]
 
     # Extract epoch number from filename
     try:
@@ -217,9 +218,7 @@ def main():
     if args.data_dir:
         data_dir = Path(args.data_dir)
     else:
-        data_dir = PROJECT_ROOT / "basketball_foul_detection" / "data" / "basketball"
-        if not data_dir.exists():
-            data_dir = PROJECT_ROOT / "data" / "basketball"
+        data_dir = PROJECT_ROOT / "data" / "basketball"
 
     print("=" * 70)
     print("COMPREHENSIVE EVALUATION REPORT")
